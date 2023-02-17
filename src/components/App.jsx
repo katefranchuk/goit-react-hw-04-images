@@ -1,29 +1,25 @@
 import { Searchbar } from './Searchbar';
 import { ImageGallery } from './ImageGallery';
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 import { fetchPhotosByQuery } from 'services/web-api';
 import { Button } from './Button/Button';
 import { Loader } from './Loader/Loader';
 import css from './App.module.css';
 
-export class App extends Component {
-  state = {
-    images: [],
-    page: 1,
-    query: '',
-    isLoading: false,
-    error: '',
-    showLoadMore: false,
-  };
+export const App = () => {
+  const [query, setQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [images, setImages] = useState([]);
+  const [page, setPage] = useState(1);
+  const [error, setError] = useState(null);
+  const [showLoadMore, setShowLoadMore] = useState(false);
 
-  async componentDidUpdate(_, prevState) {
-    //при сабміті оновлюється state і викликається метод
-    const { query, page } = this.state;
-    if (prevState.query !== query || prevState.page !== page) {
-      this.setState({ isLoading: true });
+  useEffect(() => {
+    if (!query) return;
+    const fetchPhotos = async () => {
       try {
+        setIsLoading(true);
         const { hits, totalHits } = await fetchPhotosByQuery(query, page);
-
         const images = hits.map(
           // це масив
           ({ id, webformatURL, largeImageURL, tags }) => ({
@@ -33,43 +29,35 @@ export class App extends Component {
             tags,
           })
         );
-
-        console.log(page);
-        console.log(Math.ceil(totalHits / 12));
-        this.setState(prevState => ({
-          images: [...prevState.images, ...images],
-          showLoadMore: page < Math.ceil(totalHits / 12),
-        }));
+        setImages(prevImages => [...prevImages, ...images]);
+        setShowLoadMore(page < Math.ceil(totalHits / 12));
       } catch (error) {
-        this.setState({ error: error.message });
+        setError(error.message);
       } finally {
-        this.setState({ isLoading: false });
+        setIsLoading(false);
       }
-    }
-  }
+    };
 
-  handleLoadMore = () => {
-    this.setState(prevState => ({ page: prevState.page + 1 }));
+    fetchPhotos();
+  }, [query, page]);
+
+  const handleLoadMore = () => {
+    setPage(prevPage => prevPage + 1);
   };
 
-  handleDataFormSubmit = searchQuery => {
-    this.setState({
-      images: [],
-      page: 1,
-      query: searchQuery,
-      showLoadMore: false,
-    });
+  const handleDataFormSubmit = searchQuery => {
+    setImages([]);
+    setPage(1);
+    setQuery(searchQuery);
+    setShowLoadMore(false);
   };
 
-  render() {
-    const { images, isLoading, showLoadMore } = this.state;
-    return (
-      <div className={css.App}>
-        <Searchbar onSubmit={this.handleDataFormSubmit} />
-        {isLoading && <Loader />}
-        {images.length !== 0 ? <ImageGallery images={images} /> : null}
-        {showLoadMore && <Button onClick={this.handleLoadMore} />}
-      </div>
-    );
-  }
-}
+  return (
+    <div className={css.App}>
+      <Searchbar onSubmit={handleDataFormSubmit} />
+      {isLoading && <Loader />}
+      {images.length !== 0 ? <ImageGallery images={images} /> : null}
+      {showLoadMore && <Button onClick={handleLoadMore} />}
+    </div>
+  );
+};
