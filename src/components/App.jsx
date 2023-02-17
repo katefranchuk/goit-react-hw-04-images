@@ -15,11 +15,6 @@ export const App = () => {
   const [showLoadMore, setShowLoadMore] = useState(false);
 
   useEffect(() => {
-    if (!error) return;
-    console.log(error);
-  }, [error]);
-
-  useEffect(() => {
     if (!query) return;
     const fetchPhotos = async () => {
       try {
