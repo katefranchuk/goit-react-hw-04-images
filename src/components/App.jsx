@@ -11,7 +11,7 @@ export const App = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [images, setImages] = useState([]);
   const [page, setPage] = useState(1);
-  const [error, setError] = useState(null);
+  const [setError] = useState(null);
   const [showLoadMore, setShowLoadMore] = useState(false);
 
   useEffect(() => {
