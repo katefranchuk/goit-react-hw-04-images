@@ -11,7 +11,6 @@ export const App = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [images, setImages] = useState([]);
   const [page, setPage] = useState(1);
-  const [setError] = useState(null);
   const [showLoadMore, setShowLoadMore] = useState(false);
 
   useEffect(() => {
@@ -32,7 +31,7 @@ export const App = () => {
         setImages(prevImages => [...prevImages, ...images]);
         setShowLoadMore(page < Math.ceil(totalHits / 12));
       } catch (error) {
-        setError(error.message);
+        console.log(error.message);
       } finally {
         setIsLoading(false);
       }
